@@ -53,9 +53,5 @@ class CustomerRepositoryTest {
 
         Optional<Customer> optionalCustomer = customerRepository.findById(id);
         System.out.println(optionalCustomer.toString());
-
-        // Then
-//        assertThrows()
-//        (customerRepository.save(customer))
     }
 }

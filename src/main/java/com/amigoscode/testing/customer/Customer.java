@@ -18,13 +18,10 @@ public class Customer {
     private UUID id;
 
     @NotBlank
-    @NotEmpty
-    @NotNull
+    @Column(nullable = false)
     private String name;
 
     @NotBlank
-    @NotEmpty
-    @NotNull
     @Column(nullable = false, unique = true)
     private String phoneNumber;
 
