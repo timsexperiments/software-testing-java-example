@@ -1,22 +1,26 @@
 package com.amigoscode.testing.customer;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
 public class Customer {
+
     @Id
     private UUID id;
 
     @NotBlank
-    @NotEmpty
+    @Column(nullable = false)
     private String name;
 
     @NotBlank
-    @NotEmpty
+    @Column(nullable = false, unique = true)
     private String phoneNumber;
 
     public Customer(UUID id, String name, String phoneNumber) {
@@ -53,11 +57,17 @@ public class Customer {
     }
 
     @Override
-    public String toString() {
-        return "Customer{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
-                '}';
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Customer customer = (Customer) o;
+        return Objects.equals(id, customer.id) &&
+                Objects.equals(name, customer.name) &&
+                Objects.equals(phoneNumber, customer.phoneNumber);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, phoneNumber);
     }
 }
