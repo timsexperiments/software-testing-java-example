@@ -3,14 +3,17 @@ package com.amigoscode.testing.customer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.dao.DataIntegrityViolationException;
 
-import javax.validation.constraints.AssertTrue;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
-@DataJpaTest
+@DataJpaTest(properties = {
+        "spring.jpa.properties.javax.persistence.validation.mode=none"
+})
 class CustomerRepositoryTest {
 
     @Autowired
@@ -39,7 +42,18 @@ class CustomerRepositoryTest {
 
         // Then
         Optional<Customer> optionalCustomer = customerRepository.findById(id);
-        assertTrue(optionalCustomer.isPresent() && customer.equals(optionalCustomer.get()));
+        assertThat(optionalCustomer.isPresent() && customer.equals(optionalCustomer.get()));
+    }
+
+    @Test
+    void itShouldNotSaveWhenNameIsNull() {
+        // Given
+        UUID id = UUID.randomUUID();
+        Customer customer = new Customer(id, null, "80000");
+
+        // When
+        // Then
+        assertThrows(DataIntegrityViolationException.class, () -> customerRepository.save(customer));
     }
 
     @Test
@@ -49,13 +63,8 @@ class CustomerRepositoryTest {
         Customer customer = new Customer(id, null, null);
 
         // When
-        customerRepository.save(customer);
-
-        Optional<Customer> optionalCustomer = customerRepository.findById(id);
-        System.out.println(optionalCustomer.toString());
-
         // Then
-//        assertThrows()
-//        (customerRepository.save(customer))
+        assertThatThrownBy(() -> customerRepository.save(customer))
+                .hasSameClassAs(DataIntegrityViolationException.class);
     }
 }
