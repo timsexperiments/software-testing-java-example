@@ -29,7 +29,11 @@ public class CustomerRegistrationService {
                 return customer.getId();
             }
 
-            throw new DuplicateCustomerException(String.format("Phone number {} is already in use by another user", phoneNumber));
+            throw new DuplicateCustomerException(String.format("Phone number %s is already taken by another user", phoneNumber));
+        }
+
+        if (customerRegistrationRequest.getCustomer().getId() == null) {
+            customerRegistrationRequest.getCustomer().setId(UUID.randomUUID());
         }
 
         Customer savedCustomer = customerRepository.save(customerRegistrationRequest.getCustomer());

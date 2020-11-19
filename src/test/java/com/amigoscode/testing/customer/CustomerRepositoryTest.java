@@ -3,29 +3,47 @@ package com.amigoscode.testing.customer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.dao.DataIntegrityViolationException;
 
-import javax.validation.constraints.AssertTrue;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@DataJpaTest
+@DataJpaTest(properties = {
+        "spring.jpa.properties.javax.persistence.validation.mode=none"
+})
 class CustomerRepositoryTest {
 
     @Autowired
     private CustomerRepository customerRepository;
 
     @Test
-    void itShouldSelectCustomerByPhoneNumber() {
+    void itShouldNotSelectCustomerByPhoneNumberWhenNumberDoesNotExist() {
         // Given
         String phoneNumber = "8002";
 
         // When
+        // Then
         Optional<Customer> optionalCustomer = customerRepository.findByPhoneNumber(phoneNumber);
+        assertTrue(!optionalCustomer.isPresent());
+    }
+
+    @Test
+    void itShouldFindCustomerByPhoneNumber() {
+        // Given
+        String phoneNumber = "8002";
+        Customer customer = new Customer(UUID.randomUUID(), "Theon (Reek) Greyjoy", phoneNumber);
+
+        // When
+        customerRepository.save(customer);
 
         // Then
-        assertTrue(!optionalCustomer.isPresent());
+        Optional<Customer> optionalCustomer = customerRepository.findByPhoneNumber(phoneNumber);
+        assertThat(optionalCustomer).isPresent().get().isEqualTo(customer);
     }
 
     @Test
@@ -39,19 +57,33 @@ class CustomerRepositoryTest {
 
         // Then
         Optional<Customer> optionalCustomer = customerRepository.findById(id);
-        assertTrue(optionalCustomer.isPresent() && customer.equals(optionalCustomer.get()));
+        assertThat(optionalCustomer).isPresent().get().isEqualTo(customer);
+//        assertTrue(optionalCustomer.isPresent() && customer.equals(optionalCustomer.get()));
     }
 
     @Test
-    void itShouldNotSaveWhenPhoneNumberIsNull() {
+    void itShouldShouldNotSaveWhenNameIsNull() {
         // Given
         UUID id = UUID.randomUUID();
-        Customer customer = new Customer(id, null, null);
+        Customer customer = new Customer(id, null, "+1 (847) 339-4837");
 
         // When
-        customerRepository.save(customer);
+        // Then
+        assertThatThrownBy(() -> customerRepository.save(customer))
+                .hasMessageContaining("not-null property references a null or transient value : com.amigoscode.testing.customer.Customer.name")
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
 
-        Optional<Customer> optionalCustomer = customerRepository.findById(id);
-        System.out.println(optionalCustomer.toString());
+    @Test
+    void itShouldThrowWhenPhoneNumberIsNull() {
+        // Given
+        UUID id = UUID.randomUUID();
+        Customer customer = new Customer(id, "Ser Davos", null);
+
+        // When
+        // Then
+        assertThatThrownBy(() -> customerRepository.save(customer))
+                .hasMessageContaining("not-null property references a null or transient value : com.amigoscode.testing.customer.Customer.phoneNumber")
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 }
