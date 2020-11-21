@@ -1,15 +1,20 @@
 package com.amigoscode.testing.payment;
 
-import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.UUID;
 
 @Entity
+@JsonIgnoreProperties(allowGetters = true)
 public class Payment {
     @Id
     @GeneratedValue
-    private Long paymentId;
+    private Long id;
 
     private UUID customerId;
 
@@ -24,8 +29,8 @@ public class Payment {
     public Payment() {
     }
 
-    public Payment(Long paymentId, UUID customerId, BigDecimal amount, Currency currency, String source, String description) {
-        this.paymentId = paymentId;
+    public Payment(Long id, UUID customerId, BigDecimal amount, Currency currency, String source, String description) {
+        this.id = id;
         this.customerId = customerId;
         this.amount = amount;
         this.currency = currency;
@@ -33,12 +38,12 @@ public class Payment {
         this.description = description;
     }
 
-    public Long getPaymentId() {
-        return paymentId;
+    public Long getId() {
+        return id;
     }
 
-    public void setPaymentId(Long paymentId) {
-        this.paymentId = paymentId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public UUID getCustomerId() {
@@ -84,7 +89,7 @@ public class Payment {
     @Override
     public String toString() {
         return "Payment{" +
-                "paymentId=" + paymentId +
+                "paymentId=" + id +
                 ", customerId=" + customerId +
                 ", amount=" + amount +
                 ", currency=" + currency +
@@ -98,7 +103,7 @@ public class Payment {
         if (this == o) return true;
         if (!(o instanceof Payment)) return false;
         Payment payment = (Payment) o;
-        return Objects.equals(getPaymentId(), payment.getPaymentId()) &&
+        return Objects.equals(getId(), payment.getId()) &&
                 Objects.equals(getCustomerId(), payment.getCustomerId()) &&
                 Objects.equals(getAmount(), payment.getAmount()) &&
                 getCurrency() == payment.getCurrency() &&

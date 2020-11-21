@@ -49,7 +49,7 @@ class PaymentServiceTest {
                         null,
                         BigDecimal.valueOf(150.32),
                         Currency.USD,
-                        "4993-4039-3996-0594",
+                        "4993 4039 3996 0594",
                         "Membership"
                 )
         );
@@ -64,6 +64,9 @@ class PaymentServiceTest {
            paymentRequest.getPayment().getCurrency(),
            paymentRequest.getPayment().getDescription()
         )).willReturn(new CardPaymentCharge(true));
+
+        // .. Payment is saved
+        given(paymentRepository.save(paymentRequest.getPayment())).willReturn(paymentRequest.getPayment());
 
         // When
         paymentService.chargeCard(customerId, paymentRequest);

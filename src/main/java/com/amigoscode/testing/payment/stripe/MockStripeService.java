@@ -4,7 +4,6 @@ import com.amigoscode.testing.payment.CardPaymentCharge;
 import com.amigoscode.testing.payment.CardPaymentCharger;
 import com.amigoscode.testing.payment.Currency;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;

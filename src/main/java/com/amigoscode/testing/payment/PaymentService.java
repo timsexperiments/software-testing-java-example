@@ -3,8 +3,10 @@ package com.amigoscode.testing.payment;
 import com.amigoscode.testing.customer.CustomerRepository;
 import com.amigoscode.testing.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,7 +25,7 @@ public class PaymentService {
         this.cardPaymentCharger = cardPaymentCharger;
     }
 
-    public void chargeCard(UUID customerId, PaymentRequest paymentRequest) {
+    public Long chargeCard(UUID customerId, PaymentRequest paymentRequest) {
         Payment payment = paymentRequest.getPayment();
 
         // 1. Does customer exist
@@ -50,8 +52,16 @@ public class PaymentService {
 
         // 5. Insert payment
         payment.setCustomerId(customerId);
-        paymentRepository.save(payment);
+        Long paymentId = paymentRepository.save(payment).getId();
 
         // 6. TODO: send sms
+
+        // 7. Return PaymentId
+        return paymentId;
+    }
+
+    public ResponseEntity<Long> makePayment(PaymentRequest paymentRequest) {
+        Long paymentId = chargeCard(paymentRequest.getPayment().getCustomerId(), paymentRequest);
+        return ResponseEntity.created(URI.create(String.format("/api/payments/%d", paymentId))).body(paymentId);
     }
 }
