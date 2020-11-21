@@ -49,6 +49,7 @@ public class PaymentService {
         }
 
         // 5. Insert payment
+        payment.setCustomerId(customerId);
         paymentRepository.save(payment);
 
         // 6. TODO: send sms

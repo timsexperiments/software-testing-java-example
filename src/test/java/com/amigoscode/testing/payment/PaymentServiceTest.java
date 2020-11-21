@@ -2,6 +2,7 @@ package com.amigoscode.testing.payment;
 
 import com.amigoscode.testing.customer.Customer;
 import com.amigoscode.testing.customer.CustomerRepository;
+import com.amigoscode.testing.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -14,9 +15,11 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 
 class PaymentServiceTest {
     @Mock
@@ -35,11 +38,9 @@ class PaymentServiceTest {
     }
 
     @Test
-    void itShouldChargeCardSuccesfully() {
+    void itShouldChargeCardSuccessfully() {
         // Given
         UUID customerId = UUID.randomUUID();
-        // ... Mock findCustomerById
-        given(customerRepository.findById(customerId)).willReturn(Optional.of(mock(Customer.class)));
 
         // ... Make payment request
         PaymentRequest paymentRequest = new PaymentRequest(
@@ -53,13 +54,16 @@ class PaymentServiceTest {
                 )
         );
 
-        // ... Card is charged succesfully
+        // ... Mock findCustomerById
+        given(customerRepository.findById(customerId)).willReturn(Optional.of(mock(Customer.class)));
+
+        // ... Card is charged successfully
         given(cardPaymentCharger.chargeCard(
            paymentRequest.getPayment().getSource(),
            paymentRequest.getPayment().getAmount(),
            paymentRequest.getPayment().getCurrency(),
            paymentRequest.getPayment().getDescription()
-        ));
+        )).willReturn(new CardPaymentCharge(true));
 
         // When
         paymentService.chargeCard(customerId, paymentRequest);
@@ -73,5 +77,92 @@ class PaymentServiceTest {
                 .isEqualToIgnoringGivenFields(paymentRequest.getPayment(), "customerId");
 
         assertThat(paymentArgumentCaptorValue.getCustomerId()).isEqualTo(customerId);
+    }
+
+    @Test
+    void itShouldThrowWhenCustomerIsNotFound() {
+        // Given
+        UUID customerId = UUID.randomUUID();
+
+        // ... Mock findCustomerById
+        given(customerRepository.findById(customerId)).willReturn(Optional.empty());
+
+        // When
+        // Then
+        then(cardPaymentCharger).shouldHaveNoInteractions();
+
+        assertThatThrownBy(() -> paymentService.chargeCard(customerId, new PaymentRequest(new Payment())))
+                .hasMessageContaining(String.format("Customer with the ID [%s] does not exist", customerId))
+                .isInstanceOf(ResourceNotFoundException.class);
+
+        then(paymentRepository).should(never()).save(any(Payment.class));
+    }
+
+    @Test
+    void itShouldThrowWhenCurrencyIsNotSupported() {
+        // Given
+        UUID customerId = UUID.randomUUID();
+
+        // ... Make payment request
+        PaymentRequest paymentRequest = new PaymentRequest(
+                new Payment(
+                        null,
+                        null,
+                        BigDecimal.valueOf(150.32),
+                        Currency.CAD,
+                        "4993-4039-3996-0594",
+                        "Membership"
+                )
+        );
+
+        // ... Mock findCustomerById
+        given(customerRepository.findById(customerId)).willReturn(Optional.of(mock(Customer.class)));
+
+        // When
+        // Then
+        then(cardPaymentCharger).shouldHaveNoInteractions();
+
+        assertThatThrownBy(() -> paymentService.chargeCard(customerId, paymentRequest))
+                .hasMessageContaining(String.format("The currency [%s] is not supported", paymentRequest.getPayment().getCurrency()))
+                .isInstanceOf(IllegalStateException.class);
+
+        then(paymentRepository).should(never()).save(any(Payment.class));
+    }
+
+    @Test
+    void itShouldThrowWhenCardIsNotDebited() {
+        // Given
+        UUID customerId = UUID.randomUUID();
+
+        // ... Make payment request
+        PaymentRequest paymentRequest = new PaymentRequest(
+                new Payment(
+                        null,
+                        null,
+                        BigDecimal.valueOf(150.32),
+                        Currency.USD,
+                        "4993-4039-3996-0594",
+                        "Membership"
+                )
+        );
+
+        // ... Mock findCustomerById
+        given(customerRepository.findById(customerId)).willReturn(Optional.of(mock(Customer.class)));
+
+        // ... Card is charged unsuccessfully
+        given(cardPaymentCharger.chargeCard(
+                paymentRequest.getPayment().getSource(),
+                paymentRequest.getPayment().getAmount(),
+                paymentRequest.getPayment().getCurrency(),
+                paymentRequest.getPayment().getDescription()
+        )).willReturn(new CardPaymentCharge(false));
+
+        // When
+        // Then
+        assertThatThrownBy(() -> paymentService.chargeCard(customerId, paymentRequest))
+                .hasMessageContaining(String.format("There was an issue processing the card [%s]", paymentRequest.getPayment().getSource()))
+                .isInstanceOf(IllegalStateException.class);
+
+        then(paymentRepository).should(never()).save(any(Payment.class));
     }
 }
