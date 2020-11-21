@@ -9,7 +9,7 @@ import java.util.Map;
 
 @Service
 public class StripeApi {
-    public Charge create(Map<String, Object> params, RequestOptions requestOptions) throws StripeException {
-        return Charge.create(params, requestOptions);
+    public Charge create(Map<String, Object> params, RequestOptions options) throws StripeException {
+        return Charge.create(params, options);
     }
 }

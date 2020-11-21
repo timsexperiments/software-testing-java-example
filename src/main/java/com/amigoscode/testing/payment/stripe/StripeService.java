@@ -38,7 +38,7 @@ public class StripeService implements CardPaymentCharger {
             Charge charge = stripeApi.create(params, requestOptions);
             return new CardPaymentCharge(charge.getPaid());
         } catch (StripeException e) {
-            throw new IllegalStateException(String.format("Unable to charge card [%s]", cardSource));
+            throw new IllegalStateException(String.format("Unable to charge card [%s]", cardSource), e);
         }
     }
 }
