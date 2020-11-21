@@ -10,7 +10,7 @@ import javax.validation.Valid;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("api/customer/registration")
+@RequestMapping("api/customer-registration")
 public class CustomerRegistrationController {
 
     private final CustomerRegistrationService customerRegistrationService;
