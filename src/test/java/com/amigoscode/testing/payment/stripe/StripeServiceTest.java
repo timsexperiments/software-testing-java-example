@@ -1,11 +1,10 @@
 package com.amigoscode.testing.payment.stripe;
 
-import com.amigoscode.testing.payment.CardPaymentCharge;
+import com.amigoscode.testing.property.Properties;
 import com.amigoscode.testing.payment.Currency;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
 import com.stripe.net.RequestOptions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -15,7 +14,6 @@ import org.mockito.MockitoAnnotations;
 import java.math.BigDecimal;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
@@ -27,13 +25,15 @@ import static org.mockito.Mockito.mock;
 class StripeServiceTest {
     @Mock
     private StripeApi stripeApi;
+    @Mock
+    private Properties properties;
 
     private StripeService stripeService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
-        stripeService = new StripeService(stripeApi);
+        stripeService = new StripeService(stripeApi, properties);
     }
 
     @Test

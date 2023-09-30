@@ -11,8 +11,8 @@ import javax.validation.constraints.NotNull;
 @RestController
 @RequestMapping("api/payments")
 public class PaymentController {
-    private PaymentService paymentService;
-    private PaymentRepository paymentRepository;
+    private final PaymentService paymentService;
+    private final PaymentRepository paymentRepository;
 
     @Autowired
     public PaymentController(PaymentService paymentService, PaymentRepository paymentRepository) {
@@ -22,7 +22,6 @@ public class PaymentController {
 
     @PostMapping
     private ResponseEntity<Long> makePayment(@RequestBody @Valid PaymentRequest paymentRequest) {
-
         return paymentService.makePayment(paymentRequest);
     }
 

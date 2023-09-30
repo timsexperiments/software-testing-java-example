@@ -3,6 +3,7 @@ package com.amigoscode.testing.payment.stripe;
 import com.amigoscode.testing.payment.CardPaymentCharge;
 import com.amigoscode.testing.payment.CardPaymentCharger;
 import com.amigoscode.testing.payment.Currency;
+import com.amigoscode.testing.property.Properties;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
 import com.stripe.net.RequestOptions;
@@ -17,15 +18,16 @@ import java.util.Map;
 @Service
 @ConditionalOnProperty(value = "stripe.enabled", havingValue = "true")
 public class StripeService implements CardPaymentCharger {
-    private final static RequestOptions requestOptions = RequestOptions.builder()
-            .setApiKey("sk_test_4eC39HqLyjWDarjtT1zdp7dc")
-            .build();
+    private static RequestOptions requestOptions;
 
-    private StripeApi stripeApi;
+    private final StripeApi stripeApi;
 
     @Autowired
-    public StripeService(StripeApi stripeApi) {
+    public StripeService(StripeApi stripeApi, Properties properties) {
         this.stripeApi = stripeApi;
+        requestOptions = RequestOptions.builder()
+                .setApiKey(properties.getStripe().getKey())
+                .build();
     }
 
     @Override

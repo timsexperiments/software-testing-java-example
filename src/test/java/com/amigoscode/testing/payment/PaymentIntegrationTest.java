@@ -62,8 +62,8 @@ public class PaymentIntegrationTest {
         // Then
         // .. customer is registerd
         customerRegistrationResultActions.andExpect(status().isOk());
-//        MockHttpServletResponse response = customerRegistrationResultActions.andReturn().getResponse();
-//        assertThat(response.getContentAsString()).isNotNull();
+        // MockHttpServletResponse response = customerRegistrationResultActions.andReturn().getResponse();
+        //assertThat(response.getContentAsString()).isNotNull();
 
         // .. payment is successfully taken
         paymentResultActions.andExpect(status().isCreated());
